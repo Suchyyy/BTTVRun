@@ -1,0 +1,14 @@
+﻿{
+  "ID": "AF634E2423484234324179B44E7B07997",
+  "Disabled": false,
+  "ActionKeyword": "e",
+  "Name": "BTTVRun",
+  "Author": "Suchyy",
+  "Version": "0.0.1",
+  "Language": "csharp",
+  "Website": "https://github.com/Suchyyy/BTTVRun",
+  "ExecuteFileName": "BTTVRun.dll",
+  "IsGlobal": false,
+  "IcoPathDark": "images\\icon.png",
+  "IcoPathLight": "images\\icon.png"
+}
