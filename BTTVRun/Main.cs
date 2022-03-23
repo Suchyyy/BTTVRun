@@ -28,10 +28,18 @@ namespace BTTVRun
                 {
                     Title = emote.code,
                     SubTitle = emote.user.displayName,
-                    Icon = () => FetchImage(emote.id),
+                    Icon = () => FetchImage(emote),
                     Action = e =>
                     {
-                        Clipboard.SetImage(_client.DownloadImage(emote.id, 3));
+                        if (e.SpecialKeyState.CtrlPressed)
+                        {
+                            Clipboard.SetImage(_client.DownloadImage(emote.id, 3));
+                        }
+                        else
+                        {
+                            Clipboard.SetText($"{BTTVClient.ResourceUrl}/{emote.id}/3x.{emote.imageType}");
+                        }
+
                         return true;
                     }
                 }).ToList();
@@ -53,11 +61,11 @@ namespace BTTVRun
             Context = context;
         }
 
-        private static BitmapImage FetchImage(string id)
+        private static BitmapImage FetchImage(EmoteNode emote)
         {
             var image = new BitmapImage();
             image.BeginInit();
-            image.UriSource = new Uri($"{BTTVClient.ResourceUrl}/{id}/3x", UriKind.Absolute);
+            image.UriSource = new Uri($"{BTTVClient.ResourceUrl}/{emote.id}/3x.{emote.imageType}", UriKind.Absolute);
             image.EndInit();
             return image;
         }
