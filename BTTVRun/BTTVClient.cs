@@ -17,7 +17,8 @@ namespace BTTVRun
 
         public async Task<EmoteNode[]> Search(string query)
         {
-            if (string.IsNullOrWhiteSpace(query)) return new EmoteNode[] { };
+            var trim = query.Trim();
+            if (string.IsNullOrWhiteSpace(trim) || trim.Length < 3) return new EmoteNode[] { };
 
             var response = await _client.GetAsync($"{ApiUrl}?offset=0&limit=10&query={query}");
             response.EnsureSuccessStatusCode();
