@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
-using System.Windows.Media.Imaging;
 using Wox.Plugin;
 
 namespace BTTVRun
@@ -21,23 +20,34 @@ namespace BTTVRun
         {
             try
             {
-                var search = query.Search;
-                var emotes = _client.Search(search).Result;
+                var args = query.Search.Split(" ");
+                var emotes = _client.Search(args.ElementAtOrDefault(0)).Result;
+
+                // 0 <= size <= 3
+                int size = int.TryParse(args.ElementAtOrDefault(1), out size) ? size : 3;
+
+                if (size is > 3 or < 0)
+                {
+                    return new List<Result>
+                    {
+                        new() { Title = $"Unsupported size value: {size} {query.FirstSearch == null}. Supported size values: [1, 2, 3]." }
+                    };
+                }
 
                 return emotes.Select(emote => new Result
                 {
                     Title = emote.code,
-                    SubTitle = emote.user.displayName,
-                    Icon = () => FetchImage(emote),
+                    SubTitle = $".{emote.imageType} | {emote.user.displayName}",
+                    Icon = () => _client.DownloadThumbnail(emote),
                     Action = e =>
                     {
                         if (e.SpecialKeyState.CtrlPressed)
                         {
-                            Clipboard.SetImage(_client.DownloadImage(emote.id, 3));
+                            Clipboard.SetImage(_client.DownloadImage(emote.id, size));
                         }
                         else
                         {
-                            Clipboard.SetText($"{BTTVClient.ResourceUrl}/{emote.id}/3x.{emote.imageType}");
+                            Clipboard.SetText($"{BTTVClient.ResourceUrl}/{emote.id}/{size}x.{emote.imageType}");
                         }
 
                         return true;
@@ -48,10 +58,7 @@ namespace BTTVRun
             {
                 return new List<Result>
                 {
-                    new()
-                    {
-                        Title = e.Message
-                    }
+                    new() { Title = e.Message }
                 };
             }
         }
@@ -59,15 +66,6 @@ namespace BTTVRun
         public void Init(PluginInitContext context)
         {
             Context = context;
-        }
-
-        private static BitmapImage FetchImage(EmoteNode emote)
-        {
-            var image = new BitmapImage();
-            image.BeginInit();
-            image.UriSource = new Uri($"{BTTVClient.ResourceUrl}/{emote.id}/3x.{emote.imageType}", UriKind.Absolute);
-            image.EndInit();
-            return image;
         }
     }
 }
