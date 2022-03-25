@@ -1,5 +1,11 @@
 ﻿namespace BTTVRun
 {
+    public class TopNode
+    {
+        public EmoteNode emote { get; set; }
+        public int total { get; set; }
+    }
+
     public class EmoteNode
     {
         public string id { get; set; }

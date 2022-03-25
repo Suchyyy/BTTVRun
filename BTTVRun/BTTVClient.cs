@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -11,7 +12,7 @@ namespace BTTVRun
 {
     public class BTTVClient
     {
-        public const string ApiUrl = "https://api.betterttv.net/3/emotes/shared/search";
+        private const string ApiUrl = "https://api.betterttv.net/3/emotes/shared";
         public const string ResourceUrl = "https://cdn.betterttv.net/emote";
 
         private readonly HttpClient _client = new();
@@ -19,14 +20,18 @@ namespace BTTVRun
         public async Task<EmoteNode[]> Search(string? query)
         {
             var trim = query?.Trim();
-            if (string.IsNullOrWhiteSpace(trim) || trim.Length < 3) return new EmoteNode[] { };
+            var response = await (string.IsNullOrWhiteSpace(trim) || trim.Length < 3
+                ? _client.GetAsync($"{ApiUrl}/top?offset=0&limit=50")
+                : _client.GetAsync($"{ApiUrl}/search?offset=0&limit=50&query={query}"));
 
-            var response = await _client.GetAsync($"{ApiUrl}?offset=0&limit=50&query={query}");
             response.EnsureSuccessStatusCode();
 
             var stringResponse = await response.Content.ReadAsStringAsync();
 
-            return JsonSerializer.Deserialize<List<EmoteNode>>(stringResponse)
+            return (string.IsNullOrWhiteSpace(trim) || trim.Length < 3
+                    ? JsonSerializer.Deserialize<List<TopNode>>(stringResponse)
+                        .Select(node => node.emote)
+                    : JsonSerializer.Deserialize<List<EmoteNode>>(stringResponse))
                 .ToArray();
         }
 
@@ -35,7 +40,7 @@ namespace BTTVRun
             using var stream = _client.GetStreamAsync($"{ResourceUrl}/{id}/{size}x").Result;
             return Image.FromStream(stream);
         }
-        
+
         public BitmapImage DownloadThumbnail(EmoteNode emote)
         {
             var image = new BitmapImage();
