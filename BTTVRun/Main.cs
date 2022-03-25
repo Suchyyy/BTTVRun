@@ -23,14 +23,14 @@ namespace BTTVRun
                 var args = query.Search.Split(" ");
                 var emotes = _client.Search(args.ElementAtOrDefault(0)).Result;
 
-                // 0 <= size <= 3
-                int size = int.TryParse(args.ElementAtOrDefault(1), out size) ? size : 3;
+                var sizeArg = args.ElementAtOrDefault(1) ?? "3";
+                var successConversion = int.TryParse(sizeArg, out var size);
 
-                if (size is > 3 or < 0)
+                if (successConversion is false || size is > 3 or < 0)
                 {
                     return new List<Result>
                     {
-                        new() { Title = $"Unsupported size value: {size} {query.FirstSearch == null}. Supported size values: [1, 2, 3]." }
+                        new() { Title = $"Unsupported size value: {sizeArg}. Supported size values: [1, 2, 3]." }
                     };
                 }
 
